@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>不動産鑑定士 短答マスター</title>
+<style>
+*{box-sizing:border-box} body{margin:0;background:#f3f7f6;color:#173b39;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP","Yu Gothic",sans-serif}
+.app{max-width:760px;margin:auto;min-height:100vh;padding:0 14px 40px}
+header{background:#0f766e;color:#fff;margin:0 -14px 18px;padding:26px 16px;text-align:center} header h1{margin:0;font-size:26px;line-height:1.35} header p{margin:8px 0 0}
+.screen{display:none} .screen.active{display:block} .card,.item{background:#fff;border-radius:15px;padding:18px;margin:12px 0;box-shadow:0 2px 10px #0001}
+button{font:inherit;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.primary{width:100%;padding:15px;border-radius:12px;background:#0f766e;color:#fff;font-weight:700;margin-top:10px}
+.secondary{width:100%;padding:13px;border-radius:12px;background:#e5f1ef;color:#0f766e;font-weight:700;margin-top:10px}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:12px} .menu button{background:#fff;border-radius:14px;min-height:110px;font-weight:700;box-shadow:0 2px 8px #0001}
+.menu span{display:block;font-size:28px;margin-bottom:8px} .back{background:none;color:#0f766e;font-weight:700;padding:8px 0}
+.item button{width:100%;text-align:left;background:none;padding:2px 0} .year button{width:100%;padding:14px;background:#f1f8f7;border-radius:10px;text-align:left;font-weight:700;margin-top:10px}
+.question{font-size:18px;line-height:1.7;font-weight:700;white-space:pre-wrap} .choice{width:100%;text-align:left;background:#f7f9f9;border:2px solid #e2eaea;border-radius:12px;padding:14px;margin:7px 0;line-height:1.6}
+.choice.selected{border-color:#0f766e;background:#e5f3f0} .choice.correct{border-color:#2e8b57;background:#edf8f0} .choice.wrong{border-color:#c94b4b;background:#fff0f0}
+.hidden{display:none!important} .quizhead{display:flex;justify-content:space-between;color:#0f766e;font-weight:700;margin:8px 2px}
+.result{padding:14px;border-radius:12px;margin-top:10px;line-height:1.6} .ok{background:#edf8f0;color:#21643b} .ng{background:#fff0f0;color:#9a2f2f}
+.progress{height:9px;background:#e4eeee;border-radius:99px;overflow:hidden} .progress>div{height:100%;width:0;background:#0f766e}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px} .stat{background:#fff;border-radius:14px;padding:16px;text-align:center} .stat b{display:block;font-size:24px;color:#0f766e}
+footer{text-align:center;color:#899;margin-top:24px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>不動産鑑定士<br>短答マスター</h1><p>鑑定理論・行政法規</p></header>
+
+<section id="home" class="screen active">
+<div class="card" style="text-align:center"><div style="font-size:12px;letter-spacing:2px;color:#0f766e;font-weight:700">TODAY</div>
+<h2>今日の学習</h2><div class="progress"><div id="todayBar"></div></div><p id="todayText">0問回答</p>
+<button id="todayBtn" class="primary">今日の10問</button></div>
+<div class="menu">
+<button id="theoryBtn"><span>🏠</span>鑑定理論</button>
+<button id="lawBtn"><span>⚖️</span>行政法規</button>
+<button id="mistakeBtn"><span>🔴</span>間違えた問題<br><small id="mistakeCount">0問</small></button>
+<button id="statsBtn"><span>📊</span>学習記録</button>
+</div>
+</section>
+
+<section id="subject" class="screen"><button class="back" id="subjectBack">← ホーム</button><h2 id="subjectTitle"></h2><div id="years"></div></section>
+<section id="list" class="screen"><button class="back" id="listBack">← 戻る</button><h2 id="listTitle"></h2><div id="questions"></div></section>
+<section id="quiz" class="screen">
+<div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0 8px">
+<button class="back" id="quizHome">← ホーム</button>
+</div>
+<div class="quizhead"><span id="quizSubject"></span><span id="quizNo"></span></div>
+<div class="card"><div id="qtext" class="question"></div><div id="choices"></div></div>
+<button id="answer" class="primary" disabled>回答する</button><button id="next" class="primary hidden">次の問題</button>
+<button id="toggleMistake" class="secondary hidden">☆ 苦手問題に登録</button><div id="result" class="result hidden"></div></section>
+
+<section id="stats" class="screen"><button class="back" id="statsBack">← ホーム</button><h2>📊 学習記録</h2>
+<div class="stats"><div class="stat"><b id="sa">0</b>総回答数</div><div class="stat"><b id="sc">0%</b>正答率</div><div class="stat"><b id="sd">0</b>学習日数</div><div class="stat"><b id="sm">0</b>苦手問題</div></div>
+<div class="card"><p>鑑定理論</p><div class="progress"><div id="tp"></div></div><p id="tr">0%</p><p>行政法規</p><div class="progress"><div id="lp"></div></div><p id="lr">0%</p></div></section>
+<footer>学習記録はこの端末のブラウザに保存されます。</footer>
+</div>
+
+<script>
+"use strict";
+const QUESTIONS = {"令和8年": {"行政法規": [{"questionNumber": 1, "question": "行政手続法に関する次の記述のうち、正しいものはどれか。", "choices": ["行政庁は、申請に対する処分を行う場合、必ず理由を示さなければならない。", "行政指導は、法律上の根拠がなければ一切行うことができない。", "不利益処分を行う場合、原則として聴聞または弁明の機会の付与が必要である。", "行政手続法は、すべての行政機関のすべての処分に適用される。"], "answer": 2}, {"questionNumber": 2, "question": "行政不服審査法に関する次の記述のうち、正しいものはどれか。", "choices": ["審査請求は、必ず行政庁の許可を受けて行わなければならない。", "審査請求は、原則として処分があったことを知った日の翌日から起算する。", "審査請求をすることができる期間には法律上の定めがある。", "行政不服審査法では審査請求を認めていない。"], "answer": 2}], "鑑定理論": [{"questionNumber": 1, "question": "不動産鑑定評価に関する次の記述のうち、正しいものはどれか。", "choices": ["不動産の価格は常に一定である。", "不動産鑑定評価では市場参加者の行動を考慮する。", "鑑定評価において地域分析は必要ない。", "収益価格はすべての不動産について必ず適用される。"], "answer": 1}, {"questionNumber": 2, "question": "不動産の価格形成要因に関する次の記述のうち、正しいものはどれか。", "choices": ["一般的要因は価格形成に影響しない。", "地域要因は個別的要因とは無関係である。", "個別的要因には土地の形状などが含まれる。", "価格形成要因は一切変動しない。"], "answer": 2}]}};
+let subject="",year="",list=[],idx=0,selected=null,answered=false;
+let records=JSON.parse(localStorage.getItem("kanteishi_records")||"{}");
+let mistakes=JSON.parse(localStorage.getItem("kanteishi_mistakes")||"[]");
+
+const el=id=>document.getElementById(id);
+function screen(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));el(id).classList.add("active");window.scrollTo(0,0);}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+function save(){localStorage.setItem("kanteishi_records",JSON.stringify(records));localStorage.setItem("kanteishi_mistakes",JSON.stringify(mistakes));updateHome();}
+function updateHome(){const d=new Date().toISOString().slice(0,10);const n=Object.values(records).filter(x=>x.date===d).length;el("todayText").textContent=n+"問回答";el("todayBar").style.width=Math.min(n/10*100,100)+"%";el("mistakeCount").textContent=mistakes.length+"問";}
+
+function openSubject(s){
+ subject=s;el("subjectTitle").textContent=s;let ys=Object.keys(QUESTIONS).filter(y=>QUESTIONS[y][s]);
+ el("years").innerHTML=ys.map(y=>`<div class="item year"><b>${esc(y)}</b><button data-year="${esc(y)}">問題を見る（${QUESTIONS[y][s].length}問）→</button></div>`).join("");
+ el("years").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>openList(b.dataset.year,s)));screen("subject");
+}
+function openList(y,s){
+ year=y;subject=s;list=QUESTIONS[y][s]||[];el("listTitle").textContent=y+"・"+s;
+ el("questions").innerHTML=list.map((q,i)=>`<div class="item"><button data-i="${i}">第${q.questionNumber}問　${esc(q.question)}</button></div>`).join("");
+ el("questions").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>startQuiz(Number(b.dataset.i))));screen("list");
+}
+function startToday(){
+ let all=[];Object.keys(QUESTIONS).forEach(y=>Object.keys(QUESTIONS[y]).forEach(s=>QUESTIONS[y][s].forEach(q=>all.push({y:y,s:s,q:q}))));
+ all.sort(()=>Math.random()-.5);let p=all.slice(0,10);if(!p.length){alert("問題データがありません");return;}
+ year=p[0].y;subject=p[0].s;list=p.map(x=>x.q);startQuiz(0);
+}
+function startQuiz(i){
+ idx=i;selected=null;answered=false;const q=list[i];el("quizSubject").textContent=year+"・"+subject;el("quizNo").textContent=(i+1)+" / "+list.length;el("qtext").textContent=q.question;
+ el("choices").innerHTML=q.choices.map((c,n)=>`<button class="choice" data-n="${n}">${n+1}. ${esc(c)}</button>`).join("");
+ el("choices").querySelectorAll(".choice").forEach(b=>b.addEventListener("click",()=>select(Number(b.dataset.n))));
+ el("answer").disabled=true;el("answer").classList.remove("hidden");el("next").classList.add("hidden");el("toggleMistake").classList.add("hidden");el("result").className="result hidden";screen("quiz");
+}
+function select(n){if(answered)return;selected=n;el("answer").disabled=false;el("choices").querySelectorAll(".choice").forEach((b,i)=>b.classList.toggle("selected",i===n));}
+function submit(){
+ if(selected===null||answered)return;answered=true;const q=list[idx],correct=selected===q.answer,k=year+"|"+subject+"|"+q.questionNumber;
+ records[k]={correct:correct,date:new Date().toISOString().slice(0,10),subject:subject};
+ if(!correct&&!mistakes.includes(k))mistakes.push(k);if(correct)mistakes=mistakes.filter(x=>x!==k);
+ el("choices").querySelectorAll(".choice").forEach((b,i)=>{b.disabled=true;if(i===q.answer)b.classList.add("correct");if(i===selected&&!correct)b.classList.add("wrong");});
+ el("result").className="result "+(correct?"ok":"ng");el("result").innerHTML=correct?"✅ 正解！":"❌ 不正解。<br>正解は "+(q.answer+1)+" 番です。";
+ el("answer").classList.add("hidden");el("next").classList.remove("hidden");el("toggleMistake").classList.remove("hidden");updateMistakeButton();save();
+}
+function updateMistakeButton(){const q=list[idx],k=year+"|"+subject+"|"+q.questionNumber;el("toggleMistake").textContent=mistakes.includes(k)?"★ 苦手問題から外す":"☆ 苦手問題に登録";}
+function toggleMistake(){const q=list[idx],k=year+"|"+subject+"|"+q.questionNumber;if(mistakes.includes(k))mistakes=mistakes.filter(x=>x!==k);else mistakes.push(k);updateMistakeButton();save();}
+function showMistakes(){let a=[];mistakes.forEach(k=>{let p=k.split("|"),q=(QUESTIONS[p[0]]?.[p[1]]||[]).find(x=>String(x.questionNumber)===p[2]);if(q)a.push({y:p[0],s:p[1],q:q});});if(!a.length){alert("苦手問題はまだありません");return;}year=a[0].y;subject=a[0].s;list=a.map(x=>x.q);el("listTitle").textContent="🔴 間違えた問題";el("questions").innerHTML=a.map((x,i)=>`<div class="item"><button data-i="${i}">${x.y}・${x.s} 第${x.q.questionNumber}問<br>${esc(x.q.question)}</button></div>`).join("");el("questions").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>startQuiz(Number(b.dataset.i))));screen("list");}
+function stats(){let a=Object.values(records),c=a.filter(x=>x.correct).length;el("sa").textContent=a.length;el("sc").textContent=a.length?Math.round(c/a.length*100)+"%":"0%";el("sd").textContent=new Set(a.map(x=>x.date)).size;el("sm").textContent=mistakes.length;rate("鑑定理論","tp","tr");rate("行政法規","lp","lr");screen("stats");}
+function rate(s,b,t){let a=Object.values(records).filter(x=>x.subject===s),c=a.filter(x=>x.correct).length,r=a.length?Math.round(c/a.length*100):0;el(b).style.width=r+"%";el(t).textContent=r+"%";}
+
+el("todayBtn").addEventListener("click",startToday);
+el("theoryBtn").addEventListener("click",()=>openSubject("鑑定理論"));
+el("lawBtn").addEventListener("click",()=>openSubject("行政法規"));
+el("mistakeBtn").addEventListener("click",showMistakes);
+el("statsBtn").addEventListener("click",stats);
+el("subjectBack").addEventListener("click",()=>screen("home"));
+el("listBack").addEventListener("click",()=>openSubject(subject));
+el("statsBack").addEventListener("click",()=>screen("home"));
+el("quizHome").addEventListener("click",()=>screen("home"));
+el("answer").addEventListener("click",submit);
+el("next").addEventListener("click",()=>idx+1<list.length?startQuiz(idx+1):screen("home"));
+el("toggleMistake").addEventListener("click",toggleMistake);
+updateHome();
+</script>
+</body></html>
